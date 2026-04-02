@@ -1,65 +1,128 @@
-import Image from "next/image";
+"use client";
+
+import { useState } from "react";
 
 export default function Home() {
+  const [email, setEmail] = useState("");
+  const [submitted, setSubmitted] = useState(false);
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    // Simulate waitlist join
+    setSubmitted(true);
+    setEmail("");
+  };
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+    <main className="min-h-screen w-full bg-[#17171f] flex flex-col items-center justify-start relative overflow-hidden">
+      {/* Glowing Background Accent */}
+      <div
+        aria-hidden
+        className="absolute top-0 left-0 w-full h-[600px] pointer-events-none"
+      >
+        <div className="absolute w-[900px] h-[500px] left-1/2 -translate-x-1/2 -top-40 rounded-full opacity-60 blur-2xl bg-gradient-to-tr from-[#7928ca] via-[#4f8cff] to-transparent" />
+        <div className="absolute w-[450px] h-[300px] left-1/3 top-10 rounded-full opacity-40 blur-3xl bg-gradient-to-b from-[#4f8cff] to-transparent" />
+      </div>
+      {/* Hero Section */}
+      <section className="z-10 pt-28 pb-12 flex flex-col items-center w-full max-w-2xl text-center px-4">
+        <h1 className="text-4xl sm:text-5xl md:text-6xl font-extrabold leading-tight bg-gradient-to-br from-[#c471f5] via-[#49a4fa] to-white inline-block text-transparent bg-clip-text drop-shadow-lg mb-4">
+          The Side Hustle Co-Pilot <br /> for Students.
+        </h1>
+        <p className="text-lg md:text-xl text-zinc-400 font-medium mb-8">
+          Meet Trakkit — organize, analyze, and crush your side hustles with pro-level insights.
+        </p>
+        {/* Waitlist input */}
+        <form onSubmit={handleSubmit} className="flex w-full max-w-md mx-auto rounded-xl bg-white/10 backdrop-blur-md shadow-lg ring-1 ring-white/10 p-2 gap-2 items-center">
+          <input
+            type="email"
+            className="flex-1 px-4 py-3 rounded-md bg-transparent focus:outline-none text-zinc-100 placeholder:text-zinc-400 font-medium"
+            placeholder="Enter your email"
+            required
+            disabled={submitted}
+            value={email}
+            onChange={e => setEmail(e.target.value)}
+          />
+          <button
+            type="submit"
+            disabled={submitted}
+            className="bg-gradient-to-tr from-[#7928ca] to-[#4f8cff] shadow-[0_0_15px_2px_rgba(121,40,202,0.25)] text-white px-6 py-3 rounded-md font-semibold transition-all hover:scale-105 hover:shadow-[0_0_25px_8px_rgba(79,140,255,0.15)] focus:outline-none focus:ring-2 focus:ring-[#7928ca]"
           >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+            {submitted ? "Joined!" : "Join"}
+          </button>
+        </form>
+        {submitted && (
+          <span className="mt-2 inline-block text-xs text-[#49a4fa] font-semibold">
+            Thanks for joining the waitlist!
+          </span>
+        )}
+      </section>
+      {/* Features Section */}
+      <section className="z-10 w-full max-w-5xl grid grid-cols-1 md:grid-cols-3 gap-7 px-4 pb-16">
+        {[
+          {
+            title: "Track Profits",
+            desc:
+              "Instantly see income, costs, and net profit across all your hustles. Analytics made simple.",
+            icon: (
+              <svg viewBox="0 0 36 36" width={44} height={44} fill="none">
+                <circle cx="18" cy="18" r="16" stroke="#49a4fa" strokeWidth="3" opacity=".13"/>
+                <path d="M10 25V18M16 25V14M22 25V21M28 25V12" stroke="#c471f5" strokeWidth="2.5" strokeLinecap="round"/>
+              </svg>
+            ),
+          },
+          {
+            title: "Time Optimization",
+            desc:
+              "Visualize where your precious hours go. Maximize output, minimize wasted time.",
+            icon: (
+              <svg viewBox="0 0 36 36" width={44} height={44} fill="none">
+                <circle cx="18" cy="18" r="16" stroke="#49a4fa" strokeWidth="3" opacity=".13"/>
+                <path d="M18 9v9l6 3" stroke="#49a4fa" strokeWidth="2.5" strokeLinecap="round"/>
+              </svg>
+            ),
+          },
+          {
+            title: "Consistency Scoring",
+            desc:
+              "Stay on track with smart streaks, reminders, and gamified progression.",
+            icon: (
+              <svg viewBox="0 0 36 36" width={44} height={44} fill="none">
+                <circle cx="18" cy="18" r="16" stroke="#49a4fa" strokeWidth="3" opacity=".13"/>
+                <path d="M18 25c-3-2.5-7-4.5-7-9 0-4 4-6 7-2 3-4 7-2 7 2 0 4.5-4 6.5-7 9z" stroke="#c471f5" strokeWidth="2.5" strokeLinejoin="round"/>
+              </svg>
+            ),
+          },
+        ].map((f, i) => (
+          <div
+            key={f.title}
+            className="
+              bg-white/10
+              rounded-3xl 
+              p-7 
+              backdrop-blur-xl 
+              border border-white/10
+              shadow-[0_4px_24px_0_rgba(76,34,173,0.10),0_1.5px_4px_0_rgba(79,140,255,0.09)]
+              flex flex-col items-center gap-4
+              hover:scale-[1.03] hover:border-white/20 transition-all duration-200
+              "
+            style={{
+              background:
+                "linear-gradient(135deg, rgba(76,34,173,0.23) 0%, rgba(79,140,255,0.13) 100%)",
+            }}
           >
-            Documentation
-          </a>
-        </div>
-      </main>
-    </div>
+            <span className="mb-2">{f.icon}</span>
+            <h3 className="text-xl font-bold text-white mb-1">{f.title}</h3>
+            <p className="text-sm text-zinc-300">{f.desc}</p>
+          </div>
+        ))}
+      </section>
+      {/* Mobile Gradient Glow Bottom */}
+      <div
+        aria-hidden
+        className="fixed bottom-0 left-0 w-full h-32 pointer-events-none z-0"
+      >
+        <div className="absolute w-full h-24 bottom-0 left-0 rounded-t-full blur-2xl bg-gradient-to-t from-[#7928ca]/30 to-transparent" />
+      </div>
+    </main>
   );
 }
