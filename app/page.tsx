@@ -1,243 +1,219 @@
 "use client";
 
-import { useState, useEffect } from "react";
 import { createBrowserClient } from "@supabase/ssr";
-import type { Session } from "@supabase/supabase-js";
+import Link from "next/link";
+import { useEffect, useState } from "react";
 
-const geist =
-  "https://fonts.googleapis.com/css2?family=Geist:wght@400;600&display=swap";
+// Lucide icons (inlined SVGs for SSR compatibility)
+const LucideDollarSign = (
+  <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M12 2v20"/>
+    <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+  </svg>
+);
+
+const LucideClock = (
+  <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="12" cy="12" r="10"/>
+    <polyline points="12 6 12 12 16 14"/>
+  </svg>
+);
+
+const LucideCheck = (
+  <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#10b981" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M20 6 9 17l-5-5"/>
+  </svg>
+);
 
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
 
 const supabase = createBrowserClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-function Navbar({ session }: { session: Session | null }) {
-  const [loading, setLoading] = useState(false);
-
-  async function signInWithGoogle() {
-    setLoading(true);
-    await supabase.auth.signInWithOAuth({
-      provider: "google",
-      options: {
-        redirectTo: window.location.origin,
-      },
-    });
-    // This will hand off to Google, but if pop-up fails etc., let user retry
-    setLoading(false);
-  }
-
-  async function signOut() {
-    await supabase.auth.signOut();
-    window.location.reload();
-  }
-
-  return (
-    <nav
-      style={{
-        width: "100%",
-        display: "flex",
-        justifyContent: "space-between",
-        alignItems: "center",
-        background: "#191A1B",
-        padding: "1.5rem 2rem",
-        borderBottom: "1px solid #232425",
-      }}
-    >
-      <span
-        style={{
-          fontWeight: 600,
-          color: "#fff",
-          fontSize: "1.25rem",
-          letterSpacing: "0.01em",
-        }}
-      >
-        CharcoalApp
-      </span>
-      {session ? (
-        <button
-          style={{
-            fontFamily: "Geist, sans-serif",
-            background: "#191A1B",
-            color: "#FAFAFA",
-            border: "1px solid #232425",
-            borderRadius: "0.4rem",
-            padding: "0.6rem 1.25rem",
-            fontWeight: 600,
-            cursor: "pointer",
-            transition: "background 0.2s, color 0.2s",
-          }}
-          onClick={signOut}
-        >
-          Sign Out
-        </button>
-      ) : (
-        <button
-          style={{
-            fontFamily: "Geist, sans-serif",
-            background: "#262728",
-            color: "#FAFAFA",
-            border: "1px solid #252525",
-            borderRadius: "0.4rem",
-            padding: "0.6rem 1.25rem",
-            fontWeight: 600,
-            cursor: loading ? "not-allowed" : "pointer",
-            opacity: loading ? 0.7 : 1,
-            display: "flex",
-            alignItems: "center",
-            gap: "0.6em",
-            transition: "background 0.2s, color 0.2s, opacity 0.2s",
-          }}
-          disabled={loading}
-          onClick={signInWithGoogle}
-        >
-          <svg
-            style={{ height: "1.1em", width: "1.1em" }}
-            viewBox="0 0 18 18"
-            fill="none"
-          >
-            <g>
-              <path
-                d="M17.64 9.2045c0-.638-.0573-1.2518-.1645-1.8409H9v3.481h4.8445c-.2082 1.124-0.8346 2.0764-1.7764 2.7195v2.258h2.873c1.679-1.5481 2.644-3.8291 2.644-6.6176z"
-                fill="#4285F4"
-              />
-              <path
-                d="M9 18c2.403 0 4.419-0.801 5.892-2.179l-2.873-2.258c-0.796 0.534-1.811 0.851-3.019 0.851-2.322 0-4.287-1.569-4.99-3.682h-2.993v2.312a9 9 0 0 0 8.983 7.956z"
-                fill="#34A853"
-              />
-              <path
-                d="M4.01 10.732A5.411 5.411 0 0 1 3.615 9c0-0.599 0.105-1.175 0.295-1.732v-2.312h-2.993A8.9773 8.9773 0 0 0 0 9c0 1.536 0.37 2.994 1.027 4.256l2.983-2.524z"
-                fill="#FBBC05"
-              />
-              <path
-                d="M9 3.579c1.31 0 2.475 0.4506 3.398 1.335l2.548-2.548C13.416 0.801 11.401 0 9 0A8.9773 8.9773 0 0 0 0 9l2.983 2.524c0.703-2.113 2.668-3.682 4.99-3.682 1.021 0 1.956 0.328 2.754 0.876V3.579z"
-                fill="#EA4335"
-              />
-            </g>
-          </svg>
-          {loading ? "Loading..." : "Sign In"}
-        </button>
-      )}
-    </nav>
-  );
-}
-
-export default function HomePage() {
-  const [session, setSession] = useState<Session | null>(null);
+export default function Page() {
+  const [user, setUser] = useState<any>(null);
 
   useEffect(() => {
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, s) => {
-      setSession(s);
+    supabase.auth.getUser().then(({ data }) => {
+      setUser(data.user);
     });
-    // Check on mount
-    supabase.auth.getSession().then(({ data }) => setSession(data.session));
+    // Listen for changes
+    const { data: authListener } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null);
+    });
     return () => {
-      subscription.unsubscribe();
+      authListener.subscription.unsubscribe();
     };
   }, []);
 
+  const signInWithGoogle = async () => {
+    await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: {
+        redirectTo: window.location.origin + "/dashboard",
+      },
+    });
+  };
+
+  const signOut = async () => {
+    await supabase.auth.signOut();
+  };
+
   return (
-    <div
-      style={{
-        minHeight: "100vh",
-        background: "#141516",
-        fontFamily: "Geist, sans-serif",
-        color: "#FAFAFA",
-      }}
-    >
-      {/* Inject Geist font */}
-      <link href={geist} rel="stylesheet" />
-      <Navbar session={session} />
-      <main
+    <main className="antialiased font-sans bg-[#0a0a0a] min-h-screen flex flex-col">
+      {/* Fading Blurred Gradient Glow */}
+      <div
+        aria-hidden
+        className="pointer-events-none fixed inset-0 z-0"
         style={{
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-          marginTop: "8vh",
-          textAlign: "center",
+          background: "linear-gradient(90deg, #6d28d960 0%, #0ea5e980 100%)",
+          filter: "blur(80px)",
+          opacity: "0.65",
+          width: "100vw",
+          height: "80vh",
+          top: "0",
+          left: "0"
         }}
-      >
-        <h1
-          style={{
-            fontFamily: "Geist, sans-serif",
-            fontSize: "2.75rem",
-            fontWeight: 600,
-            letterSpacing: "-0.01em",
-            color: "#fff",
-            marginBottom: "0.7em",
-          }}
-        >
-          Welcome to the Charcoal App
-        </h1>
-        <p
-          style={{
-            fontFamily: "Geist, sans-serif",
-            fontSize: "1.28rem",
-            color: "#C7C9CB",
-            maxWidth: "36rem",
-            margin: "0 auto 2.5em",
-            lineHeight: 1.6,
-          }}
-        >
-          Ultra-clean, secure, and modern Next.js template leveraging Supabase SSR and professional UI design. <br />
-          Sign in to get started with a world-class developer experience.
-        </p>
-        {!session && (
-          <div>
-            <span
-              style={{
-                fontFamily: "Geist, sans-serif",
-                background: "#232425",
-                color: "#E8EAED",
-                borderRadius: "0.4em",
-                padding: "0.75em 1.6em",
-                fontWeight: 600,
-                fontSize: "1.1rem",
-                letterSpacing: "0.01em",
-                boxShadow: "0 1px 8px 0 rgba(0,0,0,0.12)",
-              }}
+      />
+
+      {/* Premium Navbar */}
+      <nav className="fixed z-10 top-0 left-0 w-full backdrop-blur-[20px] bg-black/30 border-b border-b-[#262626] flex justify-between items-center px-8 h-16" style={{WebkitBackdropFilter: "blur(20px)"}}>
+        <Link href="/" className="flex items-center gap-2 group">
+          <span
+            className="font-bold text-2xl tracking-tight text-white"
+            style={{letterSpacing: "-0.04em", fontFamily: "var(--font-geist-sans)"}}
+          >
+            Trakkit
+          </span>
+        </Link>
+        <div className="flex items-center gap-2">
+          {user ? (
+            <>
+              <Link
+                href="/dashboard"
+                className="px-4 py-2 rounded-md text-sm font-medium text-white bg-transparent border border-zinc-700 hover:border-zinc-500 transition-all backdrop-blur-[2px]"
+              >
+                Dashboard
+              </Link>
+              <button
+                onClick={signOut}
+                className="ml-2 px-4 py-2 rounded-md text-sm font-medium text-zinc-100 border border-zinc-700 hover:border-zinc-500 bg-black/80 transition-colors"
+              >
+                Sign Out
+              </button>
+            </>
+          ) : (
+            <button
+              onClick={signInWithGoogle}
+              className="flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium text-black bg-white hover:border-zinc-400 border border-zinc-200 transition-all shadow-sm"
             >
-              Please sign in above to continue.
-            </span>
-          </div>
-        )}
-        {session && (
-          <div
+              <svg aria-hidden width="18" height="18" viewBox="0 0 18 18">
+                <g>
+                  <path fill="#4285F4" d="M17.64 9.204c0-.638-.057-1.25-.163-1.837H9v3.477h4.844c-.209 1.13-.84 2.088-1.791 2.734v2.265h2.899c1.695-1.563 2.688-3.866 2.688-6.639z"/>
+                  <path fill="#34A853" d="M9 18c2.43 0 4.474-.805 5.966-2.186l-2.899-2.265c-.805.54-1.837.863-3.067.863-2.36 0-4.358-1.595-5.074-3.741H.957v2.347A8.994 8.994 0 0 0 9 18z"/>
+                  <path fill="#FBBC05" d="M3.926 10.671A5.41 5.41 0 0 1 3.468 9a5.41 5.41 0 0 1 .458-1.671V4.982H.957A8.996 8.996 0 0 0 0 9c0 1.408.338 2.74.957 3.982l2.969-2.311z"/>
+                  <path fill="#EA4335" d="M9 3.579c1.32 0 2.5.455 3.428 1.35l2.57-2.571C13.472 1.081 11.429 0 9 0A8.994 8.994 0 0 0 .957 4.982l2.969 2.347C4.642 5.175 6.64 3.579 9 3.579z"/>
+                </g>
+              </svg>
+              Sign In
+            </button>
+          )}
+        </div>
+      </nav>
+
+      {/* Hero & Content */}
+      <section className="relative flex flex-col items-center justify-center flex-1 pt-36 pb-16 px-6 sm:px-0 z-10">
+        {/* Frosted "glow" panel with typographic hero */}
+        <div className="max-w-2xl w-full mx-auto text-center">
+          <h1
+            className="text-[clamp(2.8rem,9vw,4.6rem)] leading-[1.04] font-bold tracking-tight"
             style={{
-              marginTop: "2em",
-              background: "#18191B",
-              borderRadius: ".75rem",
-              padding: "2em 2.5em",
-              maxWidth: "28rem",
-              boxShadow: "0 2px 16px 0 rgba(0,0,0,0.16)",
+              color: "#fafafa",
+              letterSpacing: "-.04em",
+              fontFamily: "var(--font-geist-sans)"
             }}
           >
-            <p
-              style={{
-                color: "#9AA0A6",
-                fontSize: "1.04rem",
-                marginBottom: "0.7em",
-                fontFamily: "Geist, sans-serif",
-              }}
-            >
-              You&apos;re signed in as:
-            </p>
-            <div
-              style={{
-                fontFamily: "Geist, sans-serif",
-                fontWeight: 600,
-                fontSize: "1.18rem",
-                color: "#FAFAFA",
-                wordBreak: "break-all",
-              }}
-            >
-              {session.user.email}
-            </div>
-          </div>
-        )}
-      </main>
+            Trakkit
+          </h1>
+          <p className="mt-4 text-lg sm:text-xl font-medium text-zinc-100" style={{letterSpacing: "-0.02em"}}>
+            The Side Hustle Co-Pilot for Students.
+          </p>
+          <p className="mt-5 text-md sm:text-lg text-zinc-400 max-w-xl mx-auto font-normal">
+            Track your income, time, and consistency across all your gigs—effortlessly. Trakkit helps you level up your hustle with beautiful, actionable insights.
+          </p>
+        </div>
+        {/* Features */}
+        <div className="mt-20 grid grid-cols-1 md:grid-cols-3 gap-8 w-full max-w-4xl">
+          <FeatureCard
+            title="Profit"
+            description="See what you earn, where, and when. Automatic, always up to date."
+            icon={LucideDollarSign}
+            accent="violet"
+          />
+          <FeatureCard
+            title="Time"
+            description="Visualize your time spent. Optimize for what matters."
+            icon={LucideClock}
+            accent="cyan"
+          />
+          <FeatureCard
+            title="Consistency"
+            description="Your progress, streaks, and milestones—tracked for you."
+            icon={LucideCheck}
+            accent="emerald"
+          />
+        </div>
+      </section>
+    </main>
+  );
+}
+
+function FeatureCard({
+  title,
+  description,
+  icon,
+  accent,
+}: {
+  title: string;
+  description: string;
+  icon: React.ReactNode;
+  accent: "violet" | "cyan" | "emerald";
+}) {
+  const accentMap = {
+    violet: {
+      border: "border-violet-700/50",
+      glow: "group-hover:shadow-[0_0_0_2px_#6d28d9]",
+      ring: "group-hover:border-violet-400",
+    },
+    cyan: {
+      border: "border-cyan-700/50",
+      glow: "group-hover:shadow-[0_0_0_2px_#0ea5e9]",
+      ring: "group-hover:border-cyan-400",
+    },
+    emerald: {
+      border: "border-emerald-700/40",
+      glow: "group-hover:shadow-[0_0_0_2px_#10b981]",
+      ring: "group-hover:border-emerald-400",
+    },
+  };
+  return (
+    <div
+      className={[
+        "rounded-2xl group transition-all border bg-black/40 backdrop-blur-xl px-6 py-7 flex flex-col items-center hover:scale-[1.025]",
+        accentMap[accent].border,
+        accentMap[accent].glow,
+        accentMap[accent].ring,
+        "hover:border-opacity-90 border-opacity-60"
+      ].join(" ")}
+      style={{
+        minHeight: 230,
+        boxShadow:
+          "0 5px 40px 0 rgba(54,64,112,0.06), 0 1.5px 6px 0 rgba(64,0,150,0.015)",
+      }}
+    >
+      <div className="mb-4">{icon}</div>
+      <strong className="text-zinc-100 font-semibold text-lg mb-1">{title}</strong>
+      <span className="block text-zinc-400 text-base text-center font-normal">{description}</span>
     </div>
   );
 }
