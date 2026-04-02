@@ -126,3 +126,198 @@ export default function Home() {
     </main>
   );
 }
+"use client";
+import { useEffect, useState } from "react";
+import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
+
+export default function Home() {
+  const [user, setUser] = useState(null);
+  const supabase = createClientComponentClient();
+  const router = useRouter();
+
+  // Fetch user session on mount
+  useEffect(() => {
+    const getSession = async () => {
+      const { data } = await supabase.auth.getUser();
+      setUser(data.user);
+    };
+    getSession();
+
+    // Optionally: listen for auth changes
+    const { data: authListener } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null);
+    });
+    return () => {
+      authListener?.subscription?.unsubscribe?.();
+    };
+    // eslint-disable-next-line
+  }, []);
+
+  const signInWithGoogle = async () => {
+    await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: {
+        redirectTo: `${window.location.origin}/dashboard`,
+      },
+    });
+  };
+
+  const signOut = async () => {
+    await supabase.auth.signOut();
+    setUser(null);
+    router.refresh();
+  };
+
+  return (
+    <main className="flex flex-col min-h-screen bg-gradient-to-b from-[#1a184d] via-[#20123c] to-[#141218] relative">
+      {/* Navbar */}
+      <nav className="w-full flex items-center justify-between px-8 py-4 bg-transparent z-30">
+        <Link href="/" className="text-2xl font-extrabold text-[#c471f5] tracking-tight hover:text-[#7928ca] transition">
+          NeonApp
+        </Link>
+        <div className="flex gap-4 items-center">
+          {!user ? (
+            <button
+              onClick={signInWithGoogle}
+              className="px-5 py-2 rounded-full bg-[#7928ca] hover:bg-[#c471f5] text-white font-semibold shadow-[0_4px_24px_0_rgba(124,56,249,0.25)] transition-all hover:scale-105 border border-[#c471f5]/30 focus:outline-none focus:ring-2 focus:ring-[#c471f5]"
+            >
+              Sign In
+            </button>
+          ) : (
+            <>
+              <Link
+                className="px-5 py-2 rounded-full bg-[#1a184d] hover:bg-[#341892] text-white font-semibold border border-[#c471f5]/30 transition-all shadow-[0_4px_24px_0_rgba(124,56,249,0.16)] hover:scale-105"
+                href="/dashboard"
+              >
+                Go to Dashboard
+              </Link>
+              <button
+                onClick={signOut}
+                className="px-5 py-2 rounded-full bg-transparent border border-[#c471f5] text-[#c471f5] font-semibold hover:bg-[#c471f5] hover:text-white transition-all ml-2 shadow-[0_1px_8px_0_rgba(196,113,245,0.14)] hover:scale-105"
+              >
+                Sign Out
+              </button>
+            </>
+          )}
+        </div>
+      </nav>
+      {/* --- rest of landing page content below --- */}
+      {/* Move your previous <main> content below here */}
+      <div className="flex-1 flex flex-col">
+        {/* Content previously in main is preserved below */}
+        {/* ... */}
+      </div>
+      {/* Mobile Gradient Glow Bottom */}
+      <div
+        aria-hidden
+        className="fixed bottom-0 left-0 w-full h-32 pointer-events-none z-0"
+      >
+        <div className="absolute w-full h-24 bottom-0 left-0 rounded-t-full blur-2xl bg-gradient-to-t from-[#7928ca]/30 to-transparent" />
+      </div>
+    </main>
+  );
+import { useEffect, useState } from "react";
+import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
+
+export default function Home() {
+  const [user, setUser] = useState<any>(null);
+  const router = useRouter();
+  const supabase = createClientComponentClient();
+
+  // Check for an authenticated user on mount
+  useEffect(() => {
+    const getUser = async () => {
+      const { data } = await supabase.auth.getUser();
+      if (data?.user) setUser(data.user);
+      else setUser(null);
+    };
+    getUser();
+    // Optionally subscribe to auth changes to keep in sync
+    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (session?.user) {
+        setUser(session.user);
+      } else {
+        setUser(null);
+      }
+    });
+    return () => {
+      listener?.subscription.unsubscribe();
+    };
+  }, [supabase]);
+
+  // Sign in with Supabase Google OAuth
+  const signInWithGoogle = async () => {
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: {
+        redirectTo: typeof window !== "undefined"
+          ? `${window.location.origin}/dashboard`
+          : undefined,
+      },
+    });
+    if (error) {
+      alert("Sign in failed: " + error.message);
+    }
+    // Supabase will handle the redirect, so nothing else to do here
+  };
+
+  // Sign out user
+  const signOut = async () => {
+    await supabase.auth.signOut();
+    setUser(null);
+    router.push("/");
+  };
+
+  return (
+    <main className="flex flex-col min-h-screen bg-gradient-to-b from-[#1a184d] via-[#20123c] to-[#141218] relative">
+      {/* Navbar */}
+      <nav className="w-full flex items-center justify-between px-8 py-4 bg-transparent z-30">
+        <Link href="/" className="text-2xl font-extrabold text-[#c471f5] tracking-tight hover:text-[#7928ca] transition">
+          NeonApp
+        </Link>
+        <div className="flex gap-4 items-center">
+          {!user ? (
+            <button
+              onClick={signInWithGoogle}
+              className="px-5 py-2 rounded-full bg-[#7928ca] hover:bg-[#c471f5] text-white font-semibold shadow-[0_4px_24px_0_rgba(124,56,249,0.25)] transition-all hover:scale-105 border border-[#c471f5]/30 focus:outline-none focus:ring-2 focus:ring-[#c471f5]"
+            >
+              Sign In
+            </button>
+          ) : (
+            <>
+              <Link
+                className="px-5 py-2 rounded-full bg-[#1a184d] hover:bg-[#341892] text-white font-semibold border border-[#c471f5]/30 transition-all shadow-[0_4px_24px_0_rgba(124,56,249,0.16)] hover:scale-105"
+                href="/dashboard"
+              >
+                Go to Dashboard
+              </Link>
+              <button
+                onClick={signOut}
+                className="px-5 py-2 rounded-full bg-transparent border border-[#c471f5] text-[#c471f5] font-semibold hover:bg-[#c471f5] hover:text-white transition-all ml-2 shadow-[0_1px_8px_0_rgba(196,113,245,0.14)] hover:scale-105"
+              >
+                Sign Out
+              </button>
+            </>
+          )}
+        </div>
+      </nav>
+      {/* --- rest of landing page content below --- */}
+      {/* Move your previous <main> content below here */}
+      <div className="flex-1 flex flex-col">
+        {/* Content previously in main is preserved below */}
+        {/* ... */}
+      </div>
+      {/* Mobile Gradient Glow Bottom */}
+      <div
+        aria-hidden
+        className="fixed bottom-0 left-0 w-full h-32 pointer-events-none z-0"
+      >
+        <div className="absolute w-full h-24 bottom-0 left-0 rounded-t-full blur-2xl bg-gradient-to-t from-[#7928ca]/30 to-transparent" />
+      </div>
+    </main>
+  );
+}
