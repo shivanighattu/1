@@ -1,219 +1,238 @@
-"use client";
+'use client';
 
-import { createBrowserClient } from "@supabase/ssr";
-import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useCallback } from 'react';
+import { createBrowserClient } from '@supabase/ssr';
 
-// Lucide icons (inlined SVGs for SSR compatibility)
-const LucideDollarSign = (
-  <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M12 2v20"/>
-    <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
-  </svg>
+const supabase = createBrowserClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 );
 
-const LucideClock = (
-  <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
-    <circle cx="12" cy="12" r="10"/>
-    <polyline points="12 6 12 12 16 14"/>
-  </svg>
-);
-
-const LucideCheck = (
-  <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#10b981" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M20 6 9 17l-5-5"/>
-  </svg>
-);
-
-const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
-
-const supabase = createBrowserClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-export default function Page() {
-  const [user, setUser] = useState<any>(null);
-
-  useEffect(() => {
-    supabase.auth.getUser().then(({ data }) => {
-      setUser(data.user);
-    });
-    // Listen for changes
-    const { data: authListener } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null);
-    });
-    return () => {
-      authListener.subscription.unsubscribe();
-    };
-  }, []);
-
-  const signInWithGoogle = async () => {
+export default function Home() {
+  const handleLogin = useCallback(async () => {
     await supabase.auth.signInWithOAuth({
-      provider: "google",
+      provider: 'google',
       options: {
-        redirectTo: window.location.origin + "/dashboard",
+        redirectTo: `${window.location.origin}/auth/callback`,
       },
     });
-  };
+  }, []);
 
-  const signOut = async () => {
-    await supabase.auth.signOut();
-  };
-
-  return (
-    <main className="antialiased font-sans bg-[#0a0a0a] min-h-screen flex flex-col">
-      {/* Fading Blurred Gradient Glow */}
-      <div
-        aria-hidden
-        className="pointer-events-none fixed inset-0 z-0"
-        style={{
-          background: "linear-gradient(90deg, #6d28d960 0%, #0ea5e980 100%)",
-          filter: "blur(80px)",
-          opacity: "0.65",
-          width: "100vw",
-          height: "80vh",
-          top: "0",
-          left: "0"
-        }}
-      />
-
-      {/* Premium Navbar */}
-      <nav className="fixed z-10 top-0 left-0 w-full backdrop-blur-[20px] bg-black/30 border-b border-b-[#262626] flex justify-between items-center px-8 h-16" style={{WebkitBackdropFilter: "blur(20px)"}}>
-        <Link href="/" className="flex items-center gap-2 group">
-          <span
-            className="font-bold text-2xl tracking-tight text-white"
-            style={{letterSpacing: "-0.04em", fontFamily: "var(--font-geist-sans)"}}
-          >
-            Trakkit
-          </span>
-        </Link>
-        <div className="flex items-center gap-2">
-          {user ? (
-            <>
-              <Link
-                href="/dashboard"
-                className="px-4 py-2 rounded-md text-sm font-medium text-white bg-transparent border border-zinc-700 hover:border-zinc-500 transition-all backdrop-blur-[2px]"
-              >
-                Dashboard
-              </Link>
-              <button
-                onClick={signOut}
-                className="ml-2 px-4 py-2 rounded-md text-sm font-medium text-zinc-100 border border-zinc-700 hover:border-zinc-500 bg-black/80 transition-colors"
-              >
-                Sign Out
-              </button>
-            </>
-          ) : (
-            <button
-              onClick={signInWithGoogle}
-              className="flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium text-black bg-white hover:border-zinc-400 border border-zinc-200 transition-all shadow-sm"
-            >
-              <svg aria-hidden width="18" height="18" viewBox="0 0 18 18">
-                <g>
-                  <path fill="#4285F4" d="M17.64 9.204c0-.638-.057-1.25-.163-1.837H9v3.477h4.844c-.209 1.13-.84 2.088-1.791 2.734v2.265h2.899c1.695-1.563 2.688-3.866 2.688-6.639z"/>
-                  <path fill="#34A853" d="M9 18c2.43 0 4.474-.805 5.966-2.186l-2.899-2.265c-.805.54-1.837.863-3.067.863-2.36 0-4.358-1.595-5.074-3.741H.957v2.347A8.994 8.994 0 0 0 9 18z"/>
-                  <path fill="#FBBC05" d="M3.926 10.671A5.41 5.41 0 0 1 3.468 9a5.41 5.41 0 0 1 .458-1.671V4.982H.957A8.996 8.996 0 0 0 0 9c0 1.408.338 2.74.957 3.982l2.969-2.311z"/>
-                  <path fill="#EA4335" d="M9 3.579c1.32 0 2.5.455 3.428 1.35l2.57-2.571C13.472 1.081 11.429 0 9 0A8.994 8.994 0 0 0 .957 4.982l2.969 2.347C4.642 5.175 6.64 3.579 9 3.579z"/>
-                </g>
-              </svg>
-              Sign In
-            </button>
-          )}
-        </div>
-      </nav>
-
-      {/* Hero & Content */}
-      <section className="relative flex flex-col items-center justify-center flex-1 pt-36 pb-16 px-6 sm:px-0 z-10">
-        {/* Frosted "glow" panel with typographic hero */}
-        <div className="max-w-2xl w-full mx-auto text-center">
-          <h1
-            className="text-[clamp(2.8rem,9vw,4.6rem)] leading-[1.04] font-bold tracking-tight"
-            style={{
-              color: "#fafafa",
-              letterSpacing: "-.04em",
-              fontFamily: "var(--font-geist-sans)"
-            }}
-          >
-            Trakkit
-          </h1>
-          <p className="mt-4 text-lg sm:text-xl font-medium text-zinc-100" style={{letterSpacing: "-0.02em"}}>
-            The Side Hustle Co-Pilot for Students.
-          </p>
-          <p className="mt-5 text-md sm:text-lg text-zinc-400 max-w-xl mx-auto font-normal">
-            Track your income, time, and consistency across all your gigs—effortlessly. Trakkit helps you level up your hustle with beautiful, actionable insights.
-          </p>
-        </div>
-        {/* Features */}
-        <div className="mt-20 grid grid-cols-1 md:grid-cols-3 gap-8 w-full max-w-4xl">
-          <FeatureCard
-            title="Profit"
-            description="See what you earn, where, and when. Automatic, always up to date."
-            icon={LucideDollarSign}
-            accent="violet"
-          />
-          <FeatureCard
-            title="Time"
-            description="Visualize your time spent. Optimize for what matters."
-            icon={LucideClock}
-            accent="cyan"
-          />
-          <FeatureCard
-            title="Consistency"
-            description="Your progress, streaks, and milestones—tracked for you."
-            icon={LucideCheck}
-            accent="emerald"
-          />
-        </div>
-      </section>
-    </main>
-  );
-}
-
-function FeatureCard({
-  title,
-  description,
-  icon,
-  accent,
-}: {
-  title: string;
-  description: string;
-  icon: React.ReactNode;
-  accent: "violet" | "cyan" | "emerald";
-}) {
-  const accentMap = {
-    violet: {
-      border: "border-violet-700/50",
-      glow: "group-hover:shadow-[0_0_0_2px_#6d28d9]",
-      ring: "group-hover:border-violet-400",
-    },
-    cyan: {
-      border: "border-cyan-700/50",
-      glow: "group-hover:shadow-[0_0_0_2px_#0ea5e9]",
-      ring: "group-hover:border-cyan-400",
-    },
-    emerald: {
-      border: "border-emerald-700/40",
-      glow: "group-hover:shadow-[0_0_0_2px_#10b981]",
-      ring: "group-hover:border-emerald-400",
-    },
-  };
   return (
     <div
-      className={[
-        "rounded-2xl group transition-all border bg-black/40 backdrop-blur-xl px-6 py-7 flex flex-col items-center hover:scale-[1.025]",
-        accentMap[accent].border,
-        accentMap[accent].glow,
-        accentMap[accent].ring,
-        "hover:border-opacity-90 border-opacity-60"
-      ].join(" ")}
       style={{
-        minHeight: 230,
-        boxShadow:
-          "0 5px 40px 0 rgba(54,64,112,0.06), 0 1.5px 6px 0 rgba(64,0,150,0.015)",
+        minHeight: '100vh',
+        background: '#F9F9F4',
+        fontFamily: 'var(--font-geist-sans), sans-serif',
+        color: '#18181B',
+        letterSpacing: '-0.01em',
       }}
     >
-      <div className="mb-4">{icon}</div>
-      <strong className="text-zinc-100 font-semibold text-lg mb-1">{title}</strong>
-      <span className="block text-zinc-400 text-base text-center font-normal">{description}</span>
+      {/* Floating Navbar */}
+      <nav
+        style={{
+          zIndex: 10,
+          position: 'fixed',
+          top: 32,
+          left: '50%',
+          transform: 'translateX(-50%)',
+          padding: '0.375rem 1.25rem',
+          background: '#fff',
+          borderRadius: '9999px',
+          boxShadow: '0 2px 24px rgba(80,80,50,0.07)',
+          border: '1px solid #E4E4DD',
+          display: 'flex',
+          alignItems: 'center',
+          minWidth: 360,
+          maxWidth: 'calc(100vw - 2rem)',
+        }}
+      >
+        <span
+          style={{
+            fontWeight: 700,
+            fontSize: 22,
+            letterSpacing: '-0.04em',
+            color: '#222',
+            marginRight: 28,
+            userSelect: 'none',
+          }}
+        >
+          Trakkit
+        </span>
+        <div style={{ flex: 1 }} />
+        <button
+          type="button"
+          onClick={handleLogin}
+          style={{
+            background: '#fff',
+            color: '#18181B',
+            border: '1px solid #111',
+            borderRadius: '22px',
+            fontWeight: 600,
+            fontSize: 17,
+            padding: '0.45rem 1.25rem',
+            boxShadow: '0 1px 8px rgba(40,40,33,0.04)',
+            cursor: 'pointer',
+            transition: 'box-shadow .14s, border-color .3s',
+            outline: 'none',
+          }}
+        >
+          Sign In
+        </button>
+      </nav>
+
+      {/* Main Content */}
+      <main
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          paddingTop: 160,
+          paddingBottom: 64,
+          gap: 64,
+        }}
+      >
+        {/* Hero Section */}
+        <header style={{ textAlign: 'center', maxWidth: 620 }}>
+          <h1
+            style={{
+              fontSize: '2.8rem',
+              letterSpacing: '-0.04em',
+              fontWeight: 750,
+              margin: 0,
+              color: '#20201C',
+              lineHeight: 1.08,
+            }}
+          >
+            Your Side Hustle, Simplified.
+          </h1>
+          <p
+            style={{
+              fontSize: '1.4rem',
+              color: '#54545A',
+              marginTop: 20,
+              fontWeight: 450,
+              letterSpacing: '-0.01em',
+              lineHeight: 1.32,
+            }}
+          >
+            Log every dollar, see your progress, and grow your empire without the spreadsheets.
+          </p>
+        </header>
+
+        {/* Progress Preview Card */}
+        <section
+          style={{
+            marginTop: 36,
+            display: 'flex',
+            gap: 32,
+          }}
+        >
+          <div
+            style={{
+              background: 'linear-gradient(108deg, #FFE6EA 0%, #E2FFEB 70%, #E8E6FF 100%)',
+              borderRadius: 36,
+              boxShadow: '0 4px 36px rgba(100, 100, 90, 0.10)',
+              padding: '2.5rem 2.3rem 2.3rem 2.3rem',
+              minWidth: 340,
+              maxWidth: 410,
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'flex-start',
+              position: 'relative',
+            }}
+          >
+            <span
+              style={{
+                fontSize: 21,
+                fontWeight: 600,
+                marginBottom: 30,
+                color: '#31493C',
+                letterSpacing: '-0.02em',
+              }}
+            >
+              Break-even Timeline
+            </span>
+            {/* Mock timeline */}
+            <div style={{ width: '100%', margin: '18px 0 6px 0' }}>
+              <div
+                style={{
+                  height: 8,
+                  background:
+                    'linear-gradient(90deg, #FFD9DA 0%, #B8EFD9 70%, #DDDAFD 100%)',
+                  borderRadius: 10,
+                  position: 'relative',
+                  boxShadow: '0 1px 11px 0 rgba(40,70,50,0.08)',
+                }}
+              >
+                {/* Progress marker */}
+                <div
+                  style={{
+                    position: 'absolute',
+                    left: '64%',
+                    top: -4,
+                    transform: 'translateX(-50%)',
+                    width: 22,
+                    height: 22,
+                    background: '#333',
+                    borderRadius: '50%',
+                    border: '3px solid #EDF7F8',
+                    boxShadow: '0 2px 8px #DDF0E6',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}
+                >
+                  <span
+                    style={{
+                      width: 8,
+                      height: 8,
+                      borderRadius: '50%',
+                      background: '#A5F3C9',
+                      display: 'block',
+                    }}
+                  />
+                </div>
+              </div>
+              <div
+                style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  fontSize: 13,
+                  color: '#A69AAF',
+                  fontWeight: 500,
+                  marginTop: 8,
+                  paddingLeft: 2,
+                  paddingRight: 4,
+                }}
+              >
+                <span>Today</span>
+                <span>Break-even</span>
+              </div>
+            </div>
+            {/* +$47 this week badge */}
+            <div
+              style={{
+                position: 'absolute',
+                top: 33,
+                right: 34,
+                background:
+                  'linear-gradient(90deg,#D4FCEB 44%,#FFE6EA 120%)',
+                color: '#226857',
+                borderRadius: 27,
+                fontWeight: 650,
+                fontSize: 17,
+                padding: '0.32em 1.25em',
+                boxShadow: '0 1px 7px #ddeef5b3',
+                border: '1.3px solid #BEF7CA',
+                letterSpacing: '-0.01em',
+              }}
+            >
+              +$47 <span style={{ fontWeight: 550, color: '#647863' }}>this week</span>
+            </div>
+          </div>
+        </section>
+      </main>
     </div>
   );
 }
